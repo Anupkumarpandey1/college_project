@@ -1,0 +1,22 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Use Case Diagram of AlgoRiddle Platform}}{7}{figure.caption.4}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces WebSocket Communication Flow between Client and Server}}{11}{figure.caption.5}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces WebRTC Peer-to-Peer Voice Chat Signaling Flow}}{12}{figure.caption.6}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces System Architecture of AlgoRiddle}}{25}{figure.caption.9}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces React Component Hierarchy of AlgoRiddle}}{26}{figure.caption.10}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces MongoDB Document Schema Visualization}}{29}{figure.caption.11}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Data Flow Diagram of AlgoRiddle}}{30}{figure.caption.12}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Sequence Diagram for Room Creation and Joining}}{31}{figure.caption.13}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Code Execution Pipeline Flowchart}}{32}{figure.caption.14}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Entity-Relationship Diagram}}{33}{figure.caption.15}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Agile Incremental Development Methodology}}{36}{figure.caption.19}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Project Development Timeline (Gantt Chart)}}{39}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Cloud Deployment Architecture}}{40}{figure.caption.21}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces AlgoRiddle Home Page Interface}}{43}{figure.caption.22}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Collaboration Room with Code Editor and Question Panel}}{44}{figure.caption.23}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Shared Whiteboard Interface with Drawing Tools}}{46}{figure.caption.24}%
+\addvspace {10\p@ }

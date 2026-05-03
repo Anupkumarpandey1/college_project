@@ -1,0 +1,177 @@
+% ══════════════════════════════════════════════════════════════════════
+% APPENDIX
+% ══════════════════════════════════════════════════════════════════════
+\chapter*{APPENDIX}
+\addcontentsline{toc}{chapter}{Appendix}
+
+\section*{A. Server Entry Point (index.js)}
+
+\begin{lstlisting}[language=Java, caption={Server Entry Point -- index.js}]
+const express = require('express');
+const http = require('http');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const { Server } = require('socket.io');
+const cron = require('node-cron');
+const axios = require('axios');
+require('dotenv').config();
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(',') : '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('MongoDB error:', err));
+
+app.use('/api/sessions', require('./routes/sessions'));
+app.use('/api/questions', require('./routes/questions'));
+app.use('/api/code', require('./routes/code'));
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+const registerRoomHandlers =
+  require('./socket/roomHandlers');
+io.on('connection', (socket) => {
+  registerRoomHandlers(io, socket);
+  socket.on('disconnect', () => {
+    console.log(`Disconnected: ${socket.id}`);
+  });
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+\end{lstlisting}
+
+\section*{B. Question Schema (models/Question.js)}
+
+\begin{lstlisting}[language=Java, caption={Mongoose Question Schema}]
+const mongoose = require('mongoose');
+
+const questionSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  storyContext: { type: String, required: true },
+  problemStatement: { type: String, required: true },
+  pattern: { type: String, required: true },
+  difficulty: {
+    type: String,
+    enum: ['Easy', 'Medium', 'Hard'],
+    required: true
+  },
+  inputFormat: { type: String, required: true },
+  outputFormat: { type: String, required: true },
+  constraints: { type: String, required: true },
+  testCases: [{
+    input: { type: String, required: true },
+    output: { type: String, required: true },
+    isPublic: { type: Boolean, default: true }
+  }],
+  createdAt: { type: Date, default: Date.now }
+});
+
+module.exports =
+  mongoose.model('Question', questionSchema);
+\end{lstlisting}
+
+\section*{C. Code Execution Route (routes/code.js)}
+
+\begin{lstlisting}[language=Java, caption={Wandbox API Integration for Code Execution}]
+const express = require('express');
+const router = express.Router();
+const axios = require('axios');
+
+router.post('/run', async (req, res) => {
+  const { code, language, stdin } = req.body;
+
+  const compilers = {
+    'javascript': 'nodejs-20.17.0',
+    'python': 'cpython-3.14.0',
+    'cpp': 'gcc-head'
+  };
+
+  const compiler = compilers[language];
+  if (!compiler) {
+    return res.status(400)
+      .json({ error: 'Unsupported language' });
+  }
+
+  try {
+    const response = await axios.post(
+      'https://wandbox.org/api/compile.json',
+      {
+        compiler: compiler,
+        code: code,
+        stdin: stdin || '',
+        save: false
+      }
+    );
+
+    const result = response.data;
+    const stdout = result.program_output
+      || result.program_message || '';
+    const stderr = result.compiler_error
+      || result.compiler_message || '';
+
+    res.json({
+      stdout: stdout,
+      stderr: stderr,
+      code: result.status === "0" ? 0 : 1,
+      signal: null
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to execute code.'
+    });
+  }
+});
+
+module.exports = router;
+\end{lstlisting}
+
+\section*{D. Socket.IO Configuration (client/src/socket/socket.js)}
+
+\begin{lstlisting}[language=Java, caption={Client-Side Socket.IO Configuration}]
+import { io } from 'socket.io-client';
+
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL
+  || 'http://localhost:5000';
+
+export { BACKEND_URL };
+
+export const socket = io(BACKEND_URL, {
+  autoConnect: false,
+  reconnection: true,
+  transports: ['websocket', 'polling']
+});
+\end{lstlisting}
+
+\section*{E. Environment Variables}
+
+\begin{lstlisting}[language={}, caption={Server Environment Variables (.env)}]
+PORT=5000
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/algoriddle
+FRONTEND_URL=https://your-frontend.vercel.app
+NODE_ENV=production
+\end{lstlisting}
+
+\begin{lstlisting}[language={}, caption={Client Environment Variables (.env)}]
+VITE_BACKEND_URL=https://your-backend.onrender.com
+\end{lstlisting}

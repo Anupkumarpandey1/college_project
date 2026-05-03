@@ -1,0 +1,106 @@
+% ══════════════════════════════════════════════════════════════════════
+% CHAPTER 1: INTRODUCTION TO PROJECT
+% ══════════════════════════════════════════════════════════════════════
+\chapter{INTRODUCTION TO PROJECT}
+
+\section{Overview}
+
+In the modern era of computer science education, the ability to solve Data Structures and Algorithms (DSA) problems is a fundamental requirement for students pursuing careers in software engineering. Traditional methods of DSA practice involve students working in isolation on online judges such as LeetCode, HackerRank, or Codeforces. While these platforms provide vast repositories of problems and automated evaluation, they fundamentally lack the collaborative dimension that characterises real-world software development [1].
+
+The software industry has long recognised the value of collaborative problem-solving through practices such as pair programming, code reviews, and whiteboard design sessions. Studies by Williams and Kessler [1] demonstrated that pair programming not only reduces defect rates by up to 15\% but also improves developer satisfaction and knowledge transfer within teams. Despite this well-established evidence, the domain of algorithmic education remains stubbornly isolated, with students typically practising alone on their personal devices without any mechanism for real-time interaction with peers.
+
+\textbf{AlgoRiddle} is a full-stack, real-time collaborative coding platform specifically designed to address this gap. It enables multiple users to join a shared virtual room where they can simultaneously work on DSA problems, communicate through voice chat, brainstorm on a shared whiteboard, and collaboratively write code in a live-synchronized editor. The platform combines the rigour of competitive programming with the collaborative nature of pair programming, creating a unique educational environment that fosters both technical skill development and teamwork [2].
+
+The system is built using the MERN stack architecture (MongoDB, Express.js, React, Node.js) augmented with Socket.IO for real-time WebSocket communication and WebRTC for peer-to-peer voice interaction. This modern technology stack ensures low-latency synchronization across all collaborative features while maintaining scalability and cost-effectiveness through deployment on free-tier cloud platforms.
+
+The name ``AlgoRiddle'' reflects the platform's philosophy of presenting algorithmic challenges as engaging puzzles (riddles) to be solved collaboratively, rather than monotonous exercises to be endured individually. Each problem is wrapped in a story context that adds a narrative dimension to the learning experience, transforming abstract algorithmic concepts into concrete, relatable scenarios.
+
+\section{Problem Statement}
+
+The existing landscape of DSA practice platforms presents several critical limitations that hinder effective collaborative learning:
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Isolation of Learning:} Mainstream platforms like LeetCode and HackerRank enforce a strictly solitary experience, preventing students from learning collaboratively. Students cannot see each other's approaches, share insights in real-time, or benefit from the diverse problem-solving strategies that emerge in group settings [3].
+    \item \textbf{Absence of Real-Time Collaboration:} No widely-available free platform provides simultaneous code editing, shared visual brainstorming, and voice communication in a unified interface. Students who wish to collaborate must resort to screen-sharing via Zoom or Discord, which introduces latency, prevents simultaneous editing, and fragments the workflow across multiple applications.
+    \item \textbf{Lack of Gamification:} Traditional online judges present problems as monotonous lists without narrative engagement, reducing student motivation. Research by Landers [4] has shown that gamification elements such as scoring, progression, and achievement systems can significantly enhance learning outcomes by increasing intrinsic motivation.
+    \item \textbf{No Visual Brainstorming Tools:} Algorithmic problem-solving often requires visual thinking---drawing trees, graphs, state diagrams, and tracing execution paths. Yet no platform integrates a collaborative whiteboard alongside the code editor, forcing students to use separate tools for visual brainstorming.
+    \item \textbf{Cost Barriers:} Platforms offering collaborative features (e.g., CoderPad, CodeInterview) are typically commercial products designed for technical interviews, not student learning. Their subscription costs (\$100--\$500/month) make them inaccessible to the vast majority of students, particularly those in developing countries.
+    \item \textbf{No Verbal Communication:} Algorithmic problem-solving benefits enormously from verbal discussion---explaining approaches, debating trade-offs, and teaching concepts through dialogue. Existing DSA platforms provide no mechanism for voice communication, limiting collaboration to text-based chat at best.
+\end{enumerate}
+
+These limitations collectively create a significant gap between how algorithms are taught and practised in academic settings and how software is actually developed in professional environments, where collaboration, communication, and visual thinking are integral to the engineering process.
+
+\section{Objectives of the Project}
+
+The primary objectives of the AlgoRiddle project are:
+
+\begin{enumerate}[label=\arabic*.]
+    \item To design and develop a real-time collaborative coding platform that allows multiple users to write, edit, and execute code simultaneously within a shared session.
+    \item To implement a WebSocket-based synchronization engine using Socket.IO that ensures sub-second latency for code changes, whiteboard actions, and session state updates across all connected clients.
+    \item To integrate peer-to-peer voice communication using the WebRTC protocol, enabling natural verbal discussion during collaborative problem-solving sessions.
+    \item To build a shared digital whiteboard with multi-tool drawing capabilities (pen, shapes, text, eraser) for visual brainstorming and algorithm design.
+    \item To implement automated code execution and test case evaluation by integrating with the Wandbox compilation API, supporting JavaScript (Node.js), Python 3, and C++ (GCC).
+    \item To create a gamified question progression system with story-driven DSA challenges that unlock sequentially upon successful completion.
+    \item To deploy the entire platform on a zero-cost cloud infrastructure (Render, Vercel, MongoDB Atlas) demonstrating the viability of free-tier hosting for educational tools.
+    \item To develop a responsive and visually appealing user interface using React 19 with a premium dark-themed design that enhances the developer experience.
+\end{enumerate}
+
+\section{Scope of the Project}
+
+The scope of this project encompasses the following areas:
+
+\subsection{Functional Scope}
+
+\begin{itemize}
+    \item \textbf{Session Management:} Users can create new practice rooms, join existing rooms via shared links, and select DSA topics (Two Pointers, Binary Search, Recursion/DP, Sliding Window, Stack, Graph/Trees, Dynamic Programming). Each room is assigned a unique UUID that serves as both an identifier and a shareable link.
+    \item \textbf{Real-Time Code Editor:} A multi-language code editor (JavaScript, Python, C++) with syntax highlighting, auto-completion, bracket matching, and live synchronization across all participants. The editor is powered by CodeMirror 6, which provides a highly extensible and performant editing experience.
+    \item \textbf{Shared Whiteboard:} A collaborative canvas supporting freehand drawing, geometric shapes (rectangle, circle, line), text annotations, colour selection, stroke width control, undo, and clear operations. All whiteboard actions are persisted in the database and replayed for late-joining participants.
+    \item \textbf{Voice Chat:} Browser-based peer-to-peer voice communication with microphone mute/unmute controls, speaking indicator animations, and automatic echo cancellation. The implementation uses the native WebRTC API for direct audio streaming without routing through a media server.
+    \item \textbf{Code Execution Engine:} Server-side integration with the Wandbox API for compiling and executing user code against predefined test cases with real-time result display. The engine supports batch evaluation of multiple test cases with pass/fail indicators and detailed output comparison.
+    \item \textbf{Question System:} A curated database of DSA problems with story contexts, pattern tags, difficulty levels, input/output formats, constraints, and both public and hidden test cases. Problems are organised by algorithmic pattern and unlock sequentially upon successful completion.
+    \item \textbf{Gamification:} A scoring system that awards points for solving problems, celebration animations triggered upon successful completion, and a sequential question unlocking mechanism that provides a sense of progression and achievement.
+\end{itemize}
+
+\subsection{Technical Scope}
+
+\begin{itemize}
+    \item \textbf{Frontend:} React 19 with Vite 8 build tool, TailwindCSS 4 for styling, CodeMirror 6 for the code editor, React Router 7 for navigation, Axios for HTTP requests, Socket.IO Client for real-time communication, and React Hot Toast for notifications.
+    \item \textbf{Backend:} Node.js with Express 5, Socket.IO 4 for WebSocket communication, Mongoose 9 for MongoDB ODM, UUID for unique room identification, node-cron for scheduled self-ping, CORS for cross-origin request handling, and dotenv for environment variable management.
+    \item \textbf{Database:} MongoDB Atlas (cloud-hosted NoSQL database) with two primary collections---\texttt{Questions} and \texttt{Sessions}. The Sessions collection employs a TTL (Time-To-Live) index that automatically expires and removes session documents after 24 hours of inactivity.
+    \item \textbf{External API:} Wandbox online compilation service for remote code execution, supporting multiple compilers and runtime environments.
+    \item \textbf{Deployment:} Render (backend hosting with free tier), Vercel (frontend hosting with CDN and edge network), MongoDB Atlas (database with 512MB free tier), with automatic CI/CD through GitHub integration.
+\end{itemize}
+
+\subsection{Limitations and Exclusions}
+
+The following aspects are outside the scope of this project:
+
+\begin{itemize}
+    \item User authentication and persistent user accounts (the platform uses session-based anonymous identities).
+    \item Conflict resolution through Operational Transformation (OT) or Conflict-free Replicated Data Types (CRDT)---the current implementation uses a last-write-wins model for code synchronization.
+    \item Video chat functionality (only voice chat is implemented).
+    \item Mobile-responsive design (the platform is optimised for desktop browsers).
+    \item Support for programming languages beyond JavaScript, Python, and C++.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{usecase_diagram.png}
+    \caption{Use Case Diagram of AlgoRiddle Platform}
+    \label{fig:usecase}
+\end{figure}
+
+The use case diagram in Figure~\ref{fig:usecase} illustrates the primary interactions between the two actor types (Room Creator and Room Participant) and the system's core functional modules. Both actors share common use cases such as writing code, using the whiteboard, and participating in voice chat, while the Room Creator has the additional capability of initiating a new session and selecting the DSA topic.
+
+\section{Organisation of the Report}
+
+This report is organised into six chapters as follows:
+
+\begin{itemize}
+    \item \textbf{Chapter 1: Introduction to Project} --- Provides an overview of the project, the problem statement, objectives, scope, and organisation of the report.
+    \item \textbf{Chapter 2: Background and Motivation} --- Covers the theoretical foundations of the technologies used, including WebSocket, WebRTC, and NoSQL databases, along with the motivation behind the project.
+    \item \textbf{Chapter 3: Literature Survey} --- Reviews existing platforms and prior work in collaborative coding, identifying gaps that AlgoRiddle addresses.
+    \item \textbf{Chapter 4: Project Work} --- Details the system architecture, database design, data flow, development methodology, and implementation specifics.
+    \item \textbf{Chapter 5: Results and Discussions} --- Presents the user interface screenshots, functional testing results, performance analysis, and a discussion of the findings.
+    \item \textbf{Chapter 6: Conclusion and Future Scope} --- Summarises the accomplishments and proposes future enhancements.
+\end{itemize}

@@ -1,0 +1,335 @@
+% ══════════════════════════════════════════════════════════════════════
+% CHAPTER 4: PROJECT WORK
+% ══════════════════════════════════════════════════════════════════════
+\chapter{PROJECT WORK}
+
+\section{System Architecture}
+
+AlgoRiddle follows a three-tier client-server architecture comprising a Presentation Layer (React frontend), an Application Layer (Node.js/Express backend with Socket.IO), and a Data Layer (MongoDB Atlas). This architecture provides clear separation of concerns, enabling independent development, testing, and scaling of each layer. Figure~\ref{fig:architecture} illustrates the high-level system architecture.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{system_architecture.png}
+    \caption{System Architecture of AlgoRiddle}
+    \label{fig:architecture}
+\end{figure}
+
+The architecture supports two distinct communication channels between the client and server: RESTful HTTP for stateless operations (session creation, question retrieval, code execution) and persistent WebSocket connections via Socket.IO for real-time bidirectional events (code synchronization, whiteboard actions, WebRTC signaling). This dual-channel approach optimises for both reliability (REST) and latency (WebSocket).
+
+\subsection{Presentation Layer (Client)}
+
+The frontend is a Single Page Application (SPA) built with React 19 and Vite 8. It comprises a modular component hierarchy that enables independent development and testing of each feature module. Figure~\ref{fig:component} illustrates the React component hierarchy.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{component_hierarchy.png}
+    \caption{React Component Hierarchy of AlgoRiddle}
+    \label{fig:component}
+\end{figure}
+
+The core components are:
+
+\begin{itemize}
+    \item \textbf{HomePage:} Landing page with room creation modal, topic selection dropdown, and username input. Features a gradient-styled hero section with animated background glows.
+    \item \textbf{RoomPage:} Main collaboration workspace containing the QuestionPanel, CodeEditor, Whiteboard, and VoiceChat components arranged in a responsive layout.
+    \item \textbf{CodeEditor:} Powered by CodeMirror 6 with syntax highlighting for JavaScript, Python, and C++. Supports theme customisation, bracket matching, auto-indentation, and line numbers.
+    \item \textbf{Whiteboard:} HTML5 Canvas-based drawing tool with multi-tool toolbar and real-time synchronization. Supports freehand pen, rectangle, circle, line, text annotation, and eraser tools.
+    \item \textbf{VoiceChat:} WebRTC-based peer-to-peer audio communication with visual speaking indicators powered by real-time audio level analysis using the Web Audio API.
+    \item \textbf{QuestionPanel:} Displays DSA problems with story context, difficulty badges (Easy/Medium/Hard with colour coding), public test cases, and input/output format specifications.
+    \item \textbf{OutputPanel:} Displays code execution results with per-test-case pass/fail indicators, expected vs actual output comparison, and compilation error messages.
+\end{itemize}
+
+\subsection{Application Layer (Server)}
+
+The backend is a Node.js application with Express 5 providing RESTful API endpoints and Socket.IO 4 managing real-time WebSocket events. The server architecture is organised into three functional modules:
+
+\begin{itemize}
+    \item \textbf{REST API Routes:}
+    \begin{itemize}
+        \item \texttt{/api/sessions} --- CRUD operations for room sessions (create, retrieve, update, delete).
+        \item \texttt{/api/questions} --- Problem retrieval by topic/pattern with pagination support.
+        \item \texttt{/api/code} --- Code execution via Wandbox API with stdin support.
+        \item \texttt{/health} --- Health check endpoint returning server status, timestamp, and uptime.
+    \end{itemize}
+    \item \textbf{Socket.IO Room Handlers:} Event handlers for real-time room management:
+    \begin{itemize}
+        \item \texttt{join-room} --- Adds user to Socket.IO room, broadcasts participant list update.
+        \item \texttt{code-change} --- Broadcasts code updates to all room members.
+        \item \texttt{language-change} --- Synchronizes language selection across clients.
+        \item \texttt{draw-action} --- Broadcasts whiteboard drawing actions to all room members.
+        \item \texttt{cursor-move} --- Relays cursor position updates for multi-cursor display.
+        \item \texttt{webrtc-offer/answer/ice-candidate} --- Relays WebRTC signaling messages between peers.
+        \item \texttt{disconnect} --- Removes user from room and broadcasts updated participant list.
+    \end{itemize}
+    \item \textbf{Self-Ping Mechanism:} A node-cron scheduled task that pings the server's own \texttt{/health} endpoint every 10 minutes to prevent Render's free-tier service from entering sleep mode after 15 minutes of inactivity.
+\end{itemize}
+
+\subsection{Data Layer (Database)}
+
+MongoDB Atlas stores two primary collections. The database is hosted on a shared M0 cluster (free tier) with 512MB storage, automatic backups, and encrypted connections via TLS/SSL.
+
+\begin{itemize}
+    \item \textbf{Questions Collection:} Stores DSA problems with fields for title, story context, problem statement, algorithmic pattern, difficulty level, input/output format specifications, constraints, and test cases (both public and hidden).
+    \item \textbf{Sessions Collection:} Stores active room sessions with roomId (UUID), questionId (reference to Question), currentCode, language, drawingActions array, participants array, and a TTL index set to 86400 seconds (24-hour auto-expiry).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{mongodb_schema.png}
+    \caption{MongoDB Document Schema Visualization}
+    \label{fig:mongoschema}
+\end{figure}
+
+Figure~\ref{fig:mongoschema} visualises the document structure of both collections, including the reference relationship between \texttt{Sessions.questionId} and \texttt{Questions.\_id}.
+
+\section{Data Flow Design}
+
+The data flow in AlgoRiddle encompasses two primary paths: the REST API path for stateless operations and the WebSocket path for real-time events.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{data_flow_diagram.png}
+    \caption{Data Flow Diagram of AlgoRiddle}
+    \label{fig:dfd}
+\end{figure}
+
+Figure~\ref{fig:dfd} illustrates the complete data flow through the system. The REST API path handles room creation (POST), room retrieval (GET), and code execution (POST). The WebSocket path handles all real-time events including code synchronization, whiteboard actions, and WebRTC signaling. Both paths interact with the MongoDB database for data persistence.
+
+\section{Room Creation and Joining Flow}
+
+Figure~\ref{fig:sequence} presents the UML sequence diagram for the room creation and joining workflow, which is the primary entry point for all user interactions with the platform.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{sequence_diagram.png}
+    \caption{Sequence Diagram for Room Creation and Joining}
+    \label{fig:sequence}
+\end{figure}
+
+The flow begins when User A creates a room by selecting a DSA topic and entering a username. The frontend sends a POST request to the backend, which generates a UUID, creates a session document in MongoDB, and returns the room ID. The frontend then navigates to the room URL and establishes a Socket.IO connection. User B joins by clicking the shared link, which triggers the same connection flow. The backend broadcasts participant updates to all connected clients.
+
+\section{Code Execution Pipeline}
+
+The code execution pipeline is a critical component that bridges the gap between code authoring and automated evaluation. Figure~\ref{fig:codeexec} illustrates the complete execution flow.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{code_execution_flow.png}
+    \caption{Code Execution Pipeline Flowchart}
+    \label{fig:codeexec}
+\end{figure}
+
+The pipeline operates as follows:
+
+\begin{enumerate}[label=\arabic*.]
+    \item The user writes code in the CodeMirror editor and clicks the ``Run Code'' button.
+    \item The frontend sends a POST request to \texttt{/api/code/run} with the code, language, and stdin (test case input).
+    \item The backend maps the language to the appropriate Wandbox compiler identifier (e.g., \texttt{nodejs-20.17.0} for JavaScript).
+    \item The backend forwards the compilation request to the Wandbox API at \texttt{https://wandbox.org/api/compile.json}.
+    \item Wandbox compiles (for C++) and executes the code in a sandboxed environment, returning stdout, stderr, and exit code.
+    \item The backend processes the response and returns the results to the frontend.
+    \item The frontend compares the actual output against expected outputs for each test case and displays pass/fail indicators.
+    \item If all test cases pass, a celebration animation is triggered and the next question is unlocked.
+\end{enumerate}
+
+\section{Database Design}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{er_diagram.png}
+    \caption{Entity-Relationship Diagram}
+    \label{fig:er}
+\end{figure}
+
+Figure~\ref{fig:er} shows the Entity-Relationship diagram for the AlgoRiddle database. The design employs a denormalized document model optimised for read performance, with embedded subdocuments for test cases and participants.
+
+\begin{table}[H]
+\centering
+\caption{Question Collection Schema}
+\label{tab:questionschema}
+\begin{reporttable}
+\begin{tabular}{@{} l l l p{5cm} @{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Required} & \textbf{Description} \\
+\midrule
+\_id & ObjectId & Auto & Unique document identifier \\
+title & String & Yes & Problem title \\
+storyContext & String & Yes & Narrative context for gamification \\
+problemStatement & String & Yes & Formal problem description \\
+pattern & String & Yes & DSA pattern (e.g., Two Pointers) \\
+difficulty & Enum & Yes & Easy, Medium, or Hard \\
+inputFormat & String & Yes & Input specification \\
+outputFormat & String & Yes & Expected output specification \\
+constraints & String & Yes & Problem constraints \\
+testCases & Array & Yes & Array of \{input, output, isPublic\} \\
+createdAt & Date & Auto & Timestamp of creation \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Session Collection Schema}
+\label{tab:sessionschema}
+\begin{reporttable}
+\begin{tabular}{@{} l l l p{5cm} @{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Required} & \textbf{Description} \\
+\midrule
+\_id & ObjectId & Auto & Unique document identifier \\
+roomId & String & Yes & Unique UUID for the room \\
+questionId & ObjectId & Yes & Reference to Question document \\
+currentCode & String & No & Current shared code content \\
+language & String & No & Programming language (default: JS) \\
+drawingActions & Array & No & Array of whiteboard drawing actions \\
+participants & Array & No & Array of \{socketId, userId, username\} \\
+createdAt & Date & Auto & TTL index (expires after 24 hours) \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Socket.IO Event Definitions}
+\label{tab:socketevents}
+\begin{reporttable}
+\begin{tabular}{@{} l l p{5.5cm} @{}}
+\toprule
+\textbf{Event Name} & \textbf{Direction} & \textbf{Payload Description} \\
+\midrule
+join-room & Client $\rightarrow$ Server & roomId, username, userId \\
+user-joined & Server $\rightarrow$ All Clients & participants array \\
+code-change & Client $\leftrightarrow$ Server & roomId, code string \\
+language-change & Client $\leftrightarrow$ Server & roomId, language string \\
+draw-action & Client $\leftrightarrow$ Server & roomId, action object \\
+clear-board & Client $\leftrightarrow$ Server & roomId \\
+undo-action & Client $\leftrightarrow$ Server & roomId \\
+webrtc-offer & Client $\rightarrow$ Server & targetId, SDP offer \\
+webrtc-answer & Client $\rightarrow$ Server & targetId, SDP answer \\
+webrtc-ice-candidate & Client $\rightarrow$ Server & targetId, ICE candidate \\
+disconnect & Client $\rightarrow$ Server & Automatic on connection loss \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+\section{Methodology}
+
+The project was developed following the \textbf{Agile Incremental Development} methodology, which emphasises iterative delivery of working software through short development cycles (sprints). This approach was chosen because the project requirements were well-understood but the implementation details evolved through experimentation and user feedback.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{agile_methodology.png}
+    \caption{Agile Incremental Development Methodology}
+    \label{fig:agile}
+\end{figure}
+
+Figure~\ref{fig:agile} illustrates the iterative cycle of the Agile methodology as applied to AlgoRiddle's development. Each sprint followed the cycle of requirements analysis, design, implementation, testing, and review before proceeding to the next iteration.
+
+Development was divided into four iterative sprints, each building upon the deliverables of the previous sprint.
+
+\subsection{Sprint 1: Core Infrastructure (January 2026)}
+\begin{itemize}
+    \item Set up Node.js/Express backend with MongoDB Atlas connection using Mongoose ODM.
+    \item Created Question and Session Mongoose schemas with validation rules.
+    \item Implemented REST API endpoints for session creation, retrieval, and deletion.
+    \item Initialised React frontend with Vite 8, React Router 7, and TailwindCSS 4.
+    \item Established Socket.IO connection between client and server with room-based broadcasting.
+    \item Seeded the database with initial DSA problems across multiple topics.
+\end{itemize}
+
+\subsection{Sprint 2: Real-Time Code Editor (February 2026)}
+\begin{itemize}
+    \item Integrated CodeMirror 6 with multi-language support (JavaScript, Python, C++) and theme customisation.
+    \item Implemented Socket.IO-based live code synchronization with debouncing for performance optimisation.
+    \item Built the code execution pipeline using Wandbox API integration with error handling.
+    \item Developed automated test case evaluation logic with per-case pass/fail determination.
+    \item Implemented language switching with synchronized state across all participants.
+    \item Added output panel with formatted result display and error highlighting.
+\end{itemize}
+
+\subsection{Sprint 3: Collaborative Features (March 2026)}
+\begin{itemize}
+    \item Built the HTML5 Canvas whiteboard with six drawing tools (pen, rectangle, circle, line, text, eraser).
+    \item Implemented whiteboard action serialization and real-time synchronization via Socket.IO.
+    \item Added whiteboard persistence---drawing actions are stored in the database and replayed for late-joining participants.
+    \item Developed WebRTC voice chat with ICE negotiation using Google's public STUN servers.
+    \item Implemented audio level detection using the Web Audio API's AnalyserNode for speaking indicator animations.
+    \item Added microphone mute/unmute controls with visual state feedback.
+\end{itemize}
+
+\subsection{Sprint 4: Polish and Deployment (April 2026)}
+\begin{itemize}
+    \item Designed the premium dark-themed UI with TailwindCSS, featuring gradient backgrounds, glassmorphism elements, and smooth transitions.
+    \item Implemented gamification features: scoring system, celebration animations (confetti, sound effects), and sequential question unlocking.
+    \item Built the room sharing feature with clipboard-copy link generation.
+    \item Deployed to Render (backend) and Vercel (frontend) with environment variable configuration.
+    \item Implemented self-ping mechanism using node-cron to prevent server sleep on Render's free tier.
+    \item Conducted comprehensive functional and performance testing across all modules.
+\end{itemize}
+
+\section{Project Timeline}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{gantt_chart.png}
+    \caption{Project Development Timeline (Gantt Chart)}
+    \label{fig:gantt}
+\end{figure}
+
+Figure~\ref{fig:gantt} presents the Gantt chart for the AlgoRiddle project, spanning from January 2026 to May 2026. The timeline shows the four development sprints, followed by a testing and deployment phase, and concluding with documentation and report preparation.
+
+\section{Deployment Architecture}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{deployment_architecture.png}
+    \caption{Cloud Deployment Architecture}
+    \label{fig:deployment}
+\end{figure}
+
+Figure~\ref{fig:deployment} illustrates the cloud deployment architecture of AlgoRiddle. The frontend is deployed on Vercel's edge network with automatic HTTPS and CDN distribution. The backend is deployed on Render's free-tier web service with automatic SSL. MongoDB Atlas provides the database layer with encrypted connections. GitHub serves as the central repository with CI/CD pipelines that automatically deploy changes to both Vercel and Render upon push to the main branch.
+
+\section{Project Directory Structure}
+
+\begin{lstlisting}[language={}, caption={Project Directory Structure}]
+college_project/
+|-- client/                   # React Frontend
+|   |-- src/
+|   |   |-- components/
+|   |   |   |-- CodeEditor.jsx
+|   |   |   |-- QuestionPanel.jsx
+|   |   |   |-- VoiceChat.jsx
+|   |   |   |-- Whiteboard.jsx
+|   |   |   |-- OutputPanel.jsx
+|   |   |-- hooks/
+|   |   |   |-- useRoom.js
+|   |   |-- pages/
+|   |   |   |-- HomePage.jsx
+|   |   |   |-- RoomPage.jsx
+|   |   |-- socket/
+|   |   |   |-- socket.js
+|   |   |-- App.jsx
+|   |   |-- main.jsx
+|   |-- public/
+|   |-- package.json
+|   |-- vite.config.js
+|   |-- tailwind.config.js
+|-- server/                   # Node.js Backend
+|   |-- models/
+|   |   |-- Question.js
+|   |   |-- Session.js
+|   |-- routes/
+|   |   |-- code.js
+|   |   |-- questions.js
+|   |   |-- sessions.js
+|   |-- socket/
+|   |   |-- roomHandlers.js
+|   |-- index.js
+|   |-- seed.js
+|   |-- package.json
+|-- README.md
+|-- DEPLOY.md
+\end{lstlisting}

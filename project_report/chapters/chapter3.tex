@@ -1,0 +1,120 @@
+% ══════════════════════════════════════════════════════════════════════
+% CHAPTER 3: LITERATURE SURVEY
+% ══════════════════════════════════════════════════════════════════════
+\chapter{LITERATURE SURVEY}
+
+\section{Overview of Existing Platforms}
+
+A comprehensive review of existing collaborative coding and DSA practice platforms was conducted to identify the strengths and limitations of current approaches. This survey informed the design decisions underlying AlgoRiddle. The review encompassed both academic literature on collaborative learning in computer science education and commercial/open-source platforms that offer some subset of the features targeted by AlgoRiddle.
+
+The platforms were evaluated against seven criteria: real-time code synchronization, curated DSA problem sets, automated test case evaluation, shared whiteboard/drawing tools, integrated voice or video communication, gamification elements, and cost accessibility for students. The following sections detail the findings for each major platform.
+
+\section{LeetCode and HackerRank}
+
+LeetCode and HackerRank are the most widely-used platforms for DSA practice and coding interview preparation. LeetCode offers over 2,500 problems across 14 topic categories with automated test case evaluation [6]. HackerRank provides a similar problem repository with additional support for SQL, shell scripting, and domain-specific challenges. Both platforms have established themselves as the de facto standard for algorithmic interview preparation.
+
+\textbf{Strengths:} Comprehensive problem databases covering all major DSA patterns, automated evaluation with detailed performance metrics (runtime percentile, memory usage), editorial solutions with multiple approaches, active discussion forums where users share insights, and structured learning paths organised by topic and difficulty.
+
+\textbf{Limitations:} Both platforms are fundamentally single-user experiences. While LeetCode introduced a ``Contest'' mode for competitive programming and a ``Session'' feature for premium users, these do not support real-time collaboration. Neither platform provides shared whiteboards, voice communication, or live code synchronization. LeetCode's premium subscription (\$35/month) gates access to many editorial solutions and company-specific problem lists, creating a financial barrier for students. HackerRank's interview preparation features are similarly paywalled.
+
+The absence of collaborative features on these dominant platforms represents the primary market gap that AlgoRiddle addresses. Students using LeetCode or HackerRank must resort to external tools (Discord screen sharing, Google Meet) to practise collaboratively, resulting in a fragmented and suboptimal experience.
+
+\section{Visual Studio Code Live Share}
+
+Microsoft's VS Code Live Share extension enables real-time collaborative editing within the Visual Studio Code IDE [12]. Participants can simultaneously edit files, share terminal sessions, and debug code together. The extension supports both VS Code and Visual Studio, enabling cross-IDE collaboration.
+
+\textbf{Strengths:} Seamless integration with a professional IDE, support for multiple programming languages, shared debugging capabilities with synchronized breakpoints, shared terminal sessions, and server port sharing for testing web applications.
+
+\textbf{Limitations:} Requires desktop installation of VS Code (not web-based), does not provide built-in DSA problems or automated evaluation, lacks integrated voice chat and whiteboard features, and is not designed for educational or interview-style coding challenges. While it excels at general-purpose collaborative development, it offers no structured learning experience for algorithmic problem-solving.
+
+\section{CoderPad and CodeInterview}
+
+CoderPad and CodeInterview are commercial platforms designed for technical interviews [13]. They provide shared code editors with execution capabilities, video/audio communication, and drawing tools. These platforms represent the closest existing solutions to AlgoRiddle's feature set.
+
+\textbf{Strengths:} Purpose-built for collaborative coding with integrated communication tools, support for 30+ programming languages, built-in drawing canvas, and recording capabilities for interview playback.
+
+\textbf{Limitations:} These are commercial products with paid subscription models (\$100--\$500/month), making them inaccessible for student learning. They are optimised for interviewer-candidate interactions (asymmetric collaboration) rather than peer-to-peer collaborative learning (symmetric collaboration). They do not provide curated DSA problem sets, gamification elements, or structured learning paths. The pricing model targets enterprise customers (recruiting teams), not individual students or educational institutions.
+
+\section{Replit Multiplayer}
+
+Replit is a cloud-based IDE that supports collaborative multiplayer coding [14]. Multiple users can edit code in the same project simultaneously with real-time synchronization. Replit provides a complete development environment in the browser, including a file system, package manager, and deployment tools.
+
+\textbf{Strengths:} Zero-setup cloud environment, support for 50+ programming languages, built-in deployment, real-time multiplayer editing, and an integrated console for programme output.
+
+\textbf{Limitations:} Not specifically designed for DSA practice, lacks curated problem sets with automated evaluation, no integrated whiteboard for algorithmic visualization, no voice/video communication, and the free tier imposes significant resource limitations (limited CPU, RAM, and storage). The platform is designed as a general-purpose cloud IDE rather than a focused tool for algorithmic education.
+
+\section{Google Colab and Jupyter Notebooks}
+
+Google Colab provides cloud-hosted Jupyter notebooks with free GPU access for machine learning workloads. While primarily designed for data science and ML experimentation, some educators use Colab for teaching programming fundamentals.
+
+\textbf{Strengths:} Free cloud execution with GPU/TPU support, shareable notebook URLs, inline code execution with visible outputs, and Markdown support for documentation.
+
+\textbf{Limitations:} Notebook-based interface is unsuitable for traditional DSA problems that require standard input/output, no real-time multi-user editing (collaboration requires explicit sharing), no integrated communication tools, no automated test case evaluation, and the cell-based execution model does not match the typical competitive programming workflow.
+
+\section{Comparative Analysis}
+
+\begin{table}[H]
+\centering
+\caption{Comparative Analysis of Collaborative Coding Platforms}
+\label{tab:comparison}
+\begin{reporttable}
+\begin{tabular}{@{} l c c c c c c @{}}
+\toprule
+\textbf{Feature} & \textbf{LeetCode} & \textbf{VS Live} & \textbf{CoderPad} & \textbf{Replit} & \textbf{Colab} & \textbf{AlgoRiddle} \\
+\midrule
+Real-time Code Sync & No & Yes & Yes & Yes & No & Yes \\
+DSA Problems & Yes & No & No & No & No & Yes \\
+Auto Test Evaluation & Yes & No & Partial & No & No & Yes \\
+Shared Whiteboard & No & No & Yes & No & No & Yes \\
+Voice Chat & No & Yes & Yes & No & No & Yes \\
+Gamified Progress & No & No & No & No & No & Yes \\
+Free for Students & Partial & Yes & No & Partial & Yes & Yes \\
+Web-Based & Yes & No & Yes & Yes & Yes & Yes \\
+Story-Driven Problems & No & No & No & No & No & Yes \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+As Table~\ref{tab:comparison} demonstrates, AlgoRiddle is the only platform that combines all nine evaluated features: real-time code synchronization, curated DSA problems with automated evaluation, shared whiteboard, voice chat, gamified progression, zero-cost accessibility, web-based access (no installation), and story-driven problem presentation. This unique combination of features positions AlgoRiddle as a novel contribution to the landscape of DSA education tools.
+
+\section{Review of Academic Literature}
+
+\subsection{Collaborative Learning in Computer Science Education}
+
+Research by Laal and Ghodsi [7] conducted a meta-analysis of 48 studies on collaborative learning and found that it consistently enhances critical thinking, communication skills, and problem-solving abilities compared to individual study. Their findings are particularly relevant to algorithmic education, where students benefit from exposure to diverse problem-solving strategies and the ability to articulate their reasoning to peers.
+
+Williams and Kessler [1] studied pair programming extensively in both educational and professional contexts. Their research demonstrated that pair programming not only reduces defect rates but also accelerates learning in introductory programming courses. Students who practised pair programming reported higher confidence levels and deeper understanding of programming concepts compared to those who worked individually.
+
+\subsection{Gamification in Education}
+
+Deterding et al. [15] defined gamification as ``the use of game design elements in non-game contexts'' and established a taxonomy of game elements applicable to educational settings. Their framework identifies five categories of game elements: interface design patterns (badges, leaderboards), game design patterns (time constraints, limited resources), game mechanics (turns, scoring), game models (challenge, progression), and game design methods (playtesting, prototyping).
+
+Landers [4] developed a theory of gamified learning that proposes two mechanisms through which gamification improves learning outcomes: first, by directly influencing learner behaviours (e.g., increasing time spent on tasks); second, by moderating the relationship between instructional content and learning outcomes through enhanced engagement. AlgoRiddle implements gamification through scoring, sequential question unlocking, celebration animations, and story-driven problem narratives.
+
+\subsection{Algorithm Visualisation and Visual Thinking}
+
+Hundhausen et al. [16] conducted a meta-study of algorithm visualization effectiveness across 24 experimental studies. They found that algorithm visualization tools significantly improved students' understanding of abstract data structures and algorithmic concepts, but only when students were actively engaged in constructing the visualizations rather than passively viewing them. This finding directly motivates AlgoRiddle's interactive whiteboard feature, which enables students to actively draw and annotate algorithmic concepts during problem-solving sessions.
+
+\subsection{Real-Time Web Technologies for Collaboration}
+
+Pimentel and Nickerson [17] demonstrated that WebSocket-based architectures provide sub-100ms latency for collaborative editing, which is within the perceptual threshold for real-time interaction. Their work established that WebSocket is not merely an incremental improvement over HTTP polling but a qualitative transformation that enables entirely new categories of web applications---including real-time collaborative editors, multiplayer games, and live dashboards.
+
+\subsection{Cloud Computing for Educational Applications}
+
+Recent work by Nair et al. [18] showed that free-tier cloud platforms (Render, Vercel, Heroku, AWS Lambda) provide sufficient resources for low-to-medium traffic educational applications. Their study evaluated the performance characteristics of various free-tier services and concluded that modern PaaS providers offer adequate compute, memory, and bandwidth for applications serving up to 1,000 concurrent users---well within the expected usage patterns of an educational platform like AlgoRiddle.
+
+\section{Key Observations from Literature}
+
+The following key observations emerged from the literature survey and informed the design of AlgoRiddle:
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Collaborative learning improves outcomes:} The evidence consistently demonstrates that collaborative learning enhances critical thinking, communication skills, and problem-solving abilities compared to individual study [1], [7].
+    \item \textbf{Gamification increases engagement:} Game design elements (scoring, progression, achievements) when applied to educational contexts significantly increase user engagement and motivation [4], [15].
+    \item \textbf{Visual representations aid algorithmic thinking:} Interactive algorithm visualization and visual brainstorming tools significantly improve students' understanding of abstract data structures and algorithmic concepts [16].
+    \item \textbf{WebSocket enables real-time collaboration:} WebSocket-based architectures provide sub-100ms latency for collaborative editing, enabling perceptually instantaneous synchronization [17].
+    \item \textbf{Free-tier cloud services are viable for educational tools:} Modern free-tier cloud platforms provide sufficient resources for educational applications, eliminating infrastructure cost as a barrier to innovation [18].
+    \item \textbf{No existing platform combines all features:} The comparative analysis reveals a clear gap in the market for a platform that integrates real-time code collaboration, DSA problems, whiteboard, voice chat, and gamification at zero cost.
+\end{enumerate}
+
+These observations collectively validate the design decisions underlying AlgoRiddle and confirm that the platform addresses a genuine, evidence-based need in the landscape of computer science education tools.

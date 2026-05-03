@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket Test</title>
+  <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Socket Connection Test</h1>
+  <div id="status">Disconnected</div>
+  <button onclick="connect()">Connect</button>
+  <button onclick="joinRoom()">Join Room</button>
+  <div id="log"></div>
+
+  <script>
+    const socket = io('http://localhost:5000', {
+      autoConnect: false,
+      transports: ['websocket', 'polling']
+    });
+
+    const log = (msg) => {
+      const div = document.getElementById('log');
+      div.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;
+    };
+
+    socket.onAny((event, ...args) => {
+      log(`Event: ${event} ${JSON.stringify(args)}`);
+    });
+
+    socket.on('connect', () => {
+      document.getElementById('status').textContent = 'Connected! ID: ' + socket.id;
+      log('Connected with ID: ' + socket.id);
+    });
+
+    socket.on('disconnect', (reason) => {
+      document.getElementById('status').textContent = 'Disconnected: ' + reason;
+      log('Disconnected: ' + reason);
+    });
+
+    socket.on('connect_error', (err) => {
+      log('Connection error: ' + err.message);
+    });
+
+    function connect() {
+      log('Calling socket.connect()...');
+      socket.connect();
+    }
+
+    function joinRoom() {
+      const roomId = 'test-room-123';
+      const username = 'TestUser' + Math.floor(Math.random() * 1000);
+      log(`Emitting join-room: ${roomId}, ${username}`);
+      socket.emit('join-room', { roomId, username });
+    }
+  </script>
+</body>
+</html>

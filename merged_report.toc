@@ -1,0 +1,13 @@
+\contentsline {chapter}{Candidate's Declaration}{ii}{Doc-Start}%
+\contentsline {chapter}{Abstract}{iii}{chapter*.1}%
+\contentsline {chapter}{Acknowledgement}{iv}{chapter*.2}%
+\contentsline {chapter}{List of Figures}{v}{chapter*.2}%
+\contentsline {chapter}{List of Tables}{vi}{chapter*.2}%
+\contentsline {chapter}{Definitions, Acronyms and Abbreviations}{vii}{chapter*.3}%
+\contentsline {chapter}{\numberline {1}INTRODUCTION TO PROJECT}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Overview}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Problem Statement}{1}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Objectives of the Project}{2}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Scope of the Project}{3}{section.1.4}%
+\contentsline {subsection}{\numberline {1.4.1}Functional Scope}{3}{subsection.1.4.1}%
+\contentsline {subsection}{\numberline {1.4.2}Technical Scope}{3}{subsection.1.4.2}%

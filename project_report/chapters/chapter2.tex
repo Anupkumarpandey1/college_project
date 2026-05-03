@@ -1,0 +1,152 @@
+% ══════════════════════════════════════════════════════════════════════
+% CHAPTER 2: BACKGROUND AND MOTIVATION
+% ══════════════════════════════════════════════════════════════════════
+\chapter{BACKGROUND AND MOTIVATION}
+
+\section{Background of the Project}
+
+The concept of collaborative software development has evolved significantly over the past two decades. From early version control systems like CVS and Subversion to modern real-time collaboration tools such as Google Docs and Figma, the software industry has consistently moved towards enabling simultaneous multi-user editing [5]. However, this paradigm has not yet been comprehensively applied to the domain of DSA practice and algorithmic education.
+
+The algorithmic coding interview remains the primary gateway to employment at major technology companies worldwide. Platforms like LeetCode, which reported over 3 million registered users in 2024, have become indispensable tools for interview preparation [6]. Yet, educational research consistently shows that collaborative learning yields superior outcomes compared to individual study, particularly in complex problem-solving domains such as algorithm design [7].
+
+The motivation for AlgoRiddle stems from the observation that while professional software development is inherently collaborative---developers work in teams, conduct code reviews, and engage in pair programming---the tools available for learning and practising algorithms remain stubbornly individualistic. This disconnect between professional practice and educational tooling represents a significant opportunity for innovation.
+
+Furthermore, the COVID-19 pandemic and the subsequent normalisation of remote work and online education have created an unprecedented demand for tools that enable effective remote collaboration. Students who previously could study together in libraries or classrooms now require digital platforms that replicate the richness of in-person collaborative learning, including the ability to talk, draw, and code together in real-time.
+
+\section{Theoretical Foundation}
+
+\subsection{WebSocket Communication Protocol}
+
+Traditional HTTP follows a request-response model where the client initiates every interaction. This model is fundamentally unsuitable for real-time collaborative applications where the server needs to push updates to clients immediately when state changes occur. WebSocket (RFC 6455) addresses this limitation by establishing a persistent, full-duplex communication channel over a single TCP connection, enabling the server to push data to clients without polling [8].
+
+The WebSocket protocol operates in two phases: first, a standard HTTP handshake upgrades the connection from HTTP to WebSocket; second, the persistent connection enables bi-directional data frames to be sent at any time by either party. This eliminates the overhead of repeated HTTP headers and connection establishment, reducing per-message overhead from approximately 800 bytes (HTTP) to as little as 2 bytes (WebSocket frame header).
+
+Socket.IO, the library used in AlgoRiddle, provides an abstraction layer over WebSocket with several critical enhancements: automatic fallback to HTTP long-polling when WebSocket is unavailable (e.g., behind restrictive firewalls), built-in reconnection logic with exponential backoff, room-based broadcasting that enables targeted message delivery, and acknowledgement callbacks for reliable message delivery. These features are essential for building robust real-time collaborative applications that work reliably across diverse network environments.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{websocket_flow.png}
+    \caption{WebSocket Communication Flow between Client and Server}
+    \label{fig:websocket}
+\end{figure}
+
+Figure~\ref{fig:websocket} illustrates the WebSocket communication flow in AlgoRiddle. After the initial HTTP handshake and protocol upgrade, a persistent bidirectional channel is established. The server can then broadcast events such as \texttt{code-change}, \texttt{draw-action}, and \texttt{cursor-move} to all clients in a room without waiting for client-initiated requests.
+
+\subsection{WebRTC Protocol Suite}
+
+Web Real-Time Communication (WebRTC) is a W3C/IETF standard that enables peer-to-peer audio, video, and data streaming directly between web browsers without requiring plugins or intermediary servers [9]. The protocol suite comprises three core APIs:
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{MediaStream (getUserMedia):} Captures audio and/or video from local hardware devices (microphone, camera). The API supports constraints for specifying desired media properties such as echo cancellation, noise suppression, and automatic gain control.
+    \item \textbf{RTCPeerConnection:} Manages the peer-to-peer connection lifecycle, including Interactive Connectivity Establishment (ICE) negotiation, Session Traversal Utilities for NAT (STUN) server interaction, codec negotiation via Session Description Protocol (SDP), and bandwidth adaptation.
+    \item \textbf{RTCDataChannel:} Enables arbitrary data exchange between peers using the SCTP protocol, supporting both reliable (TCP-like) and unreliable (UDP-like) delivery modes.
+\end{enumerate}
+
+AlgoRiddle utilises RTCPeerConnection for voice chat, leveraging Google's public STUN servers (\texttt{stun.l.google.com:19302}) for NAT traversal. The signaling process---exchanging SDP offers, answers, and ICE candidates between peers---is facilitated through the existing Socket.IO connection, avoiding the need for a separate signaling server.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{webrtc_signaling.png}
+    \caption{WebRTC Peer-to-Peer Voice Chat Signaling Flow}
+    \label{fig:webrtc}
+\end{figure}
+
+Figure~\ref{fig:webrtc} depicts the complete WebRTC signaling flow implemented in AlgoRiddle. The process begins with each peer capturing their local audio stream via \texttt{getUserMedia}, followed by the exchange of SDP offers and answers through the Socket.IO signaling channel. Once ICE candidates are exchanged and connectivity checks complete, a direct peer-to-peer audio stream is established between the browsers, bypassing the server entirely for media data.
+
+\subsection{NoSQL Document Database Model}
+
+MongoDB employs a document-oriented data model where data is stored as flexible, JSON-like BSON (Binary JSON) documents within collections [10]. Unlike relational databases that enforce rigid schemas with fixed columns and normalised tables, MongoDB's schema-less design allows documents within the same collection to have different structures. This flexibility is particularly advantageous for AlgoRiddle's dynamic data structures.
+
+Key advantages of the document model for this project include:
+
+\begin{itemize}
+    \item \textbf{Flexible Schema:} The variable-length \texttt{drawingActions} array in Session documents can store heterogeneous drawing actions (pen strokes, shapes, text) without schema modifications.
+    \item \textbf{Embedded Documents:} The \texttt{testCases} array in Question documents embeds input/output pairs directly within the parent document, eliminating the need for join operations.
+    \item \textbf{TTL Indexes:} MongoDB's native TTL index feature enables automatic document expiry, which AlgoRiddle uses to clean up inactive sessions after 24 hours without requiring application-level garbage collection.
+    \item \textbf{Horizontal Scalability:} MongoDB Atlas supports automatic sharding for horizontal scaling, ensuring the platform can handle increased load as the user base grows.
+\end{itemize}
+
+\subsection{Single Page Application Architecture}
+
+AlgoRiddle's frontend follows the Single Page Application (SPA) architecture pattern, where the browser loads a single HTML page and dynamically updates the content as the user interacts with the application. React, the UI library used in AlgoRiddle, implements this pattern through its virtual DOM diffing algorithm, which efficiently computes the minimum set of DOM mutations required to reflect state changes [20].
+
+The SPA architecture offers several advantages for collaborative applications:
+
+\begin{itemize}
+    \item \textbf{No Page Reloads:} Navigating between the home page and a room page does not trigger a full page reload, preserving WebSocket connections and application state.
+    \item \textbf{Client-Side Routing:} React Router handles URL changes entirely on the client, enabling shareable room URLs without server-side routing logic.
+    \item \textbf{Component-Based Architecture:} Each UI element (CodeEditor, Whiteboard, VoiceChat) is an independent React component with its own state and lifecycle, enabling modular development and testing.
+    \item \textbf{Optimistic Updates:} State changes can be reflected immediately in the UI before server confirmation, providing a responsive user experience even under network latency.
+\end{itemize}
+
+\section{Software Tools and Technologies}
+
+The technology stack for AlgoRiddle was carefully selected to optimise for developer productivity, real-time performance, and deployment cost. Table~\ref{tab:techstack} provides a comprehensive overview of all technologies used across the frontend, backend, database, and deployment layers.
+
+\begin{table}[H]
+\centering
+\caption{Technology Stack of AlgoRiddle}
+\label{tab:techstack}
+\begin{reporttable}
+\begin{tabular}{@{} l l p{6.5cm} @{}}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Purpose} \\
+\midrule
+Frontend & React 19 & Component-based UI library \\
+Frontend & Vite 8 & Next-generation build tool with HMR \\
+Frontend & TailwindCSS 4 & Utility-first CSS framework \\
+Frontend & CodeMirror 6 & Extensible code editor component \\
+Frontend & Socket.IO Client & Real-time event communication \\
+Frontend & WebRTC (Native) & Peer-to-peer voice chat \\
+Frontend & React Router 7 & Client-side routing \\
+Frontend & Axios & HTTP client for API calls \\
+Frontend & React Hot Toast & Notification system \\
+Frontend & React Icons & Icon library \\
+\midrule
+Backend & Node.js 20 & JavaScript runtime environment \\
+Backend & Express 5 & Web application framework \\
+Backend & Socket.IO 4 & WebSocket server \\
+Backend & Mongoose 9 & MongoDB ODM library \\
+Backend & UUID & Unique room ID generation \\
+Backend & node-cron & Scheduled task execution \\
+Backend & CORS & Cross-origin request handling \\
+Backend & dotenv & Environment variable management \\
+Backend & Axios & HTTP client for Wandbox API \\
+\midrule
+Database & MongoDB Atlas & Cloud-hosted NoSQL database \\
+\midrule
+External API & Wandbox & Online code compilation service \\
+\midrule
+Deployment & Render & Backend cloud hosting (free tier) \\
+Deployment & Vercel & Frontend cloud hosting (free tier) \\
+Deployment & GitHub & Version control and CI/CD \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+\section{Advantages of the Chosen Technology Stack}
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Uniform Language:} JavaScript is used across the entire stack (frontend, backend, database queries), reducing context-switching overhead and enabling code reuse. Developers need proficiency in only one programming language to work on any layer of the application.
+    \item \textbf{Non-Blocking I/O:} Node.js's event-driven, non-blocking architecture is ideal for handling concurrent WebSocket connections from multiple room participants. A single Node.js process can manage thousands of simultaneous Socket.IO connections without the thread-per-connection overhead of traditional server architectures.
+    \item \textbf{Component Architecture:} React's component model enables modular development of complex UI elements (CodeEditor, Whiteboard, VoiceChat) that can be independently developed, tested, and debugged. The unidirectional data flow pattern reduces state management complexity.
+    \item \textbf{Schema Flexibility:} MongoDB's document model accommodates the dynamic and nested data structures inherent in collaborative sessions without rigid schema migrations. Adding new fields to session or question documents requires no database-level changes.
+    \item \textbf{Zero-Cost Deployment:} The entire stack can be deployed on free-tier cloud services (Render, Vercel, MongoDB Atlas), making the platform accessible for educational institutions with limited budgets. The total operational cost of the platform is \$0 per month.
+    \item \textbf{Rich Ecosystem:} The Node.js/React ecosystem provides mature, well-documented libraries for every aspect of the application, from WebSocket communication (Socket.IO) to code editing (CodeMirror) to styling (TailwindCSS).
+    \item \textbf{Hot Module Replacement:} Vite's HMR feature enables instant UI updates during development without full page reloads, significantly accelerating the development iteration cycle.
+\end{enumerate}
+
+\section{Drawbacks and Limitations of Earlier Approaches}
+
+Prior to real-time web technologies, collaborative coding required either desktop-based applications with complex networking code, or server-polling mechanisms that introduced significant latency [11]. Earlier approaches suffered from:
+
+\begin{itemize}
+    \item \textbf{High Latency:} HTTP polling-based synchronization introduced delays of 1--5 seconds, making real-time collaboration feel sluggish and unnatural. Users would frequently encounter conflicts where their edits were overwritten by stale updates from other participants.
+    \item \textbf{Server Overhead:} Polling generated unnecessary network traffic and server load even when no changes occurred. A polling interval of 1 second across 100 concurrent users would generate 100 HTTP requests per second, each carrying approximately 800 bytes of header overhead.
+    \item \textbf{Plugin Dependencies:} Pre-WebRTC voice solutions required browser plugins (e.g., Adobe Flash, Java applets) that posed security risks, degraded user experience, and were progressively deprecated by browser vendors. Flash was officially discontinued by Adobe in December 2020.
+    \item \textbf{Monolithic Architectures:} Traditional server-rendered applications could not provide the responsive, SPA-like experience needed for interactive coding environments. Full page reloads on every navigation disrupted WebSocket connections and reset application state.
+    \item \textbf{Complex Infrastructure:} Earlier collaborative tools required dedicated servers, custom networking protocols, and complex deployment pipelines. The operational cost and technical complexity of these solutions placed them beyond the reach of individual developers and small educational institutions.
+\end{itemize}
+
+The advent of WebSocket, WebRTC, and cloud-based Platform-as-a-Service (PaaS) providers has fundamentally transformed the landscape, making it feasible for small teams to build and deploy production-grade real-time collaborative applications at minimal cost. AlgoRiddle leverages these technological advances to deliver a feature-rich collaborative coding platform that would have been impractical to build even five years ago.

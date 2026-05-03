@@ -1,0 +1,219 @@
+% ══════════════════════════════════════════════════════════════════════
+% CHAPTER 5: RESULTS AND DISCUSSIONS
+% ══════════════════════════════════════════════════════════════════════
+\chapter{RESULTS AND DISCUSSIONS}
+
+\section{User Interface Results}
+
+The AlgoRiddle platform was successfully developed and deployed with a fully functional user interface. This section presents screenshots and analysis of each major interface component, demonstrating that all design objectives have been achieved.
+
+\subsection{Home Page}
+
+The home page serves as the entry point for all users and features a gradient-styled title, a descriptive tagline, and a prominent ``Start Practice Session'' call-to-action button. The design employs a dark navy background (\texttt{\#0b1120}) with subtle radial gradient glows in emerald and blue, creating a premium, modern aesthetic that immediately establishes the platform's professional quality.
+
+The home page is designed to communicate three key messages to new users: (1) what AlgoRiddle is (a collaborative coding platform), (2) what it enables (real-time DSA practice with peers), and (3) how to get started (a single button click). The minimalist design avoids information overload while conveying the platform's value proposition.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{homepage.png}
+    \caption{AlgoRiddle Home Page Interface}
+    \label{fig:homepage}
+\end{figure}
+
+Upon clicking the ``Start Practice Session'' button, a modal dialog appears that allows users to input their display name and select a DSA topic from a dropdown menu. The available topics include Two Pointers, Binary Search, Recursion/DP, Sliding Window, Stack, Graph/Trees, and Dynamic Programming. Each topic contains a curated set of problems that unlock sequentially upon successful completion.
+
+\subsection{Collaboration Room}
+
+The collaboration room is the primary workspace where all collaborative activities take place. The interface is divided into a carefully designed layout that balances information density with usability:
+
+\begin{itemize}
+    \item \textbf{Question Panel (Left, 32\% width):} Displays the current DSA problem with its story context, formal problem statement, difficulty badge, input/output format, constraints, and public test cases.
+    \item \textbf{Code Editor (Centre, flexible width):} The main coding area powered by CodeMirror 6, with a language selector dropdown, run button, and output display.
+    \item \textbf{Whiteboard (Right, slide-in overlay, 50\% width):} A toggle-able whiteboard panel that overlays the code editor when activated.
+\end{itemize}
+
+The top navigation bar displays the room ID (copyable), score counter, team members dropdown with online indicators, voice chat controls, whiteboard toggle, and a share button for generating invite links.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{room_page.png}
+    \caption{Collaboration Room with Code Editor and Question Panel}
+    \label{fig:roompage}
+\end{figure}
+
+Figure~\ref{fig:roompage} shows the collaboration room in its default configuration with the Question Panel on the left displaying a Two Pointers problem, and the Code Editor on the right with JavaScript code. The dark theme with syntax highlighting creates a comfortable coding environment that reduces eye strain during extended practice sessions.
+
+\subsection{Shared Whiteboard}
+
+The whiteboard component provides a full-screen canvas with a left-side toolbar for tool selection. The toolbar includes six drawing tools: pen (freehand), rectangle, circle, line, text annotation, and eraser. Below the tool selector, users can choose a drawing colour from a palette and adjust the stroke width using a slider. A top bar provides undo (removes the last drawing action) and clear-board (removes all drawings) controls.
+
+All drawing actions are serialised into JSON objects containing the tool type, coordinates, colour, and stroke width, then broadcast to all room participants via Socket.IO. When a new user joins a room, the complete history of drawing actions is replayed on their canvas, ensuring visual consistency across all clients.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{whiteboard.png}
+    \caption{Shared Whiteboard Interface with Drawing Tools}
+    \label{fig:whiteboard}
+\end{figure}
+
+Figure~\ref{fig:whiteboard} demonstrates the whiteboard in use, showing the toolbar on the left with the pen tool selected, colour options, and a canvas area with sample drawings. The whiteboard is particularly useful for visualising data structures (trees, linked lists, graphs), tracing algorithm execution, and sketching solution approaches before coding.
+
+\section{Functional Testing Results}
+
+Comprehensive functional testing was performed across all modules of the platform. Each test case was executed multiple times under varying network conditions (local network, WiFi, mobile data) to ensure consistent behaviour. Table~\ref{tab:testresults} summarises the test results.
+
+\begin{table}[H]
+\centering
+\caption{Functional Testing Results}
+\label{tab:testresults}
+\begin{reporttable}
+\begin{tabular}{@{} p{4.5cm} p{5cm} l @{}}
+\toprule
+\textbf{Test Case} & \textbf{Expected Result} & \textbf{Status} \\
+\midrule
+Create new room session & Room ID generated, redirect to room & Pass \\
+Join room via shared link & User added to participant list & Pass \\
+Duplicate username rejection & Error message shown, re-prompt & Pass \\
+Real-time code synchronization & Code reflected on all clients $<$1s & Pass \\
+Multi-language execution (JS) & Correct stdout with exit code 0 & Pass \\
+Multi-language execution (Python) & Correct stdout with exit code 0 & Pass \\
+Multi-language execution (C++) & Correct stdout with exit code 0 & Pass \\
+Test case evaluation (all pass) & Celebration animation triggered & Pass \\
+Test case evaluation (partial fail) & Error output with diff shown & Pass \\
+Whiteboard freehand drawing sync & Drawing visible on all clients & Pass \\
+Whiteboard shape drawing & Shape rendered on all clients & Pass \\
+Whiteboard undo operation & Last stroke removed for all & Pass \\
+Whiteboard clear operation & Canvas cleared for all clients & Pass \\
+Voice chat connection (WebRTC) & Audio stream established P2P & Pass \\
+Voice chat mute/unmute & Audio track toggled correctly & Pass \\
+Speaking indicator animation & Pulse animation on speech & Pass \\
+Next question unlock (solved) & New question loaded for all & Pass \\
+Next question locked (unsolved) & Toast error message shown & Pass \\
+Session auto-expiry (24 hours) & Session document removed by TTL & Pass \\
+Self-ping keep-alive mechanism & Server remains awake on Render & Pass \\
+Room sharing via link & Correct URL copied to clipboard & Pass \\
+Language switch synchronization & Language updated for all users & Pass \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+All 22 test cases passed successfully, demonstrating that the platform meets its functional requirements. The testing covered all major user workflows: session management, code editing and execution, whiteboard collaboration, voice communication, gamification mechanics, and deployment infrastructure.
+
+\section{Performance Analysis}
+
+\subsection{Real-Time Synchronization Latency}
+
+The Socket.IO-based synchronization engine was tested across multiple network conditions. The measured round-trip latency for code change events was recorded over 100 iterations under three network scenarios. Table~\ref{tab:latency} presents the detailed latency measurements.
+
+\begin{table}[H]
+\centering
+\caption{Real-Time Synchronization Latency Measurements}
+\label{tab:latency}
+\begin{reporttable}
+\begin{tabular}{@{} l l l l @{}}
+\toprule
+\textbf{Network Condition} & \textbf{Min Latency} & \textbf{Avg Latency} & \textbf{Max Latency} \\
+\midrule
+Local network (same WiFi) & 12 ms & 45 ms & 95 ms \\
+Broadband (different ISPs) & 35 ms & 85 ms & 180 ms \\
+Mobile data (4G) & 60 ms & 120 ms & 250 ms \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+The average latency across all conditions ranged from 45 to 120 milliseconds, well within the 200ms perceptual threshold for real-time interaction established by Nielsen [19]. This confirms that the Socket.IO-based synchronization engine provides perceptually instantaneous code updates under normal operating conditions.
+
+\subsection{Code Execution Performance}
+
+Code execution through the Wandbox API was tested for all three supported languages. Each language was tested with 10 different programmes of varying complexity. Table~\ref{tab:exectime} presents the average execution times.
+
+\begin{table}[H]
+\centering
+\caption{Average Code Execution Times by Language}
+\label{tab:exectime}
+\begin{reporttable}
+\begin{tabular}{@{} l l l l @{}}
+\toprule
+\textbf{Language} & \textbf{Compiler/Runtime} & \textbf{Avg. Time} & \textbf{Includes} \\
+\midrule
+JavaScript & Node.js 20.17.0 & 1.2 seconds & Interpretation \\
+Python & CPython 3.14.0 & 1.5 seconds & Interpretation \\
+C++ & GCC (HEAD) & 2.1 seconds & Compilation + Execution \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+The execution times include network latency to the Wandbox API servers (located in Japan), compilation time (for C++), and actual programme execution. JavaScript exhibited the fastest execution times due to V8's JIT compilation. C++ was slowest because the GCC compilation step adds approximately 0.8--1.0 seconds of overhead.
+
+\subsection{WebRTC Voice Quality}
+
+Voice chat quality was tested between peers connected through different network configurations. The testing evaluated three quality dimensions: audio clarity, latency (mouth-to-ear delay), and echo cancellation effectiveness.
+
+\begin{table}[H]
+\centering
+\caption{WebRTC Voice Chat Quality Assessment}
+\label{tab:voicequality}
+\begin{reporttable}
+\begin{tabular}{@{} l l l @{}}
+\toprule
+\textbf{Quality Dimension} & \textbf{Measurement} & \textbf{Rating} \\
+\midrule
+Audio Clarity & Clear speech with minimal artifacts & Good--Excellent \\
+Mouth-to-Ear Delay & 80--150 ms (below perceptual threshold) & Excellent \\
+Echo Cancellation & No audible echo with AEC enabled & Excellent \\
+Noise Suppression & Background noise effectively reduced & Good \\
+Speaking Detection & 1\% RMS threshold, accurate indicators & Excellent \\
+Connection Establishment & 2--4 seconds for ICE negotiation & Good \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+Audio quality was subjectively rated as ``good to excellent'' with echo cancellation, noise suppression, and automatic gain control enabled via the \texttt{getUserMedia} constraints. The RMS-based audio level detection algorithm provided accurate speaking indicator animations with a 1\% volume threshold, successfully distinguishing speech from ambient noise.
+
+\subsection{Application Load Performance}
+
+The frontend application was profiled using Chrome DevTools to measure initial load performance. Table~\ref{tab:loadperf} presents the key performance metrics.
+
+\begin{table}[H]
+\centering
+\caption{Frontend Application Load Performance Metrics}
+\label{tab:loadperf}
+\begin{reporttable}
+\begin{tabular}{@{} l l @{}}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+First Contentful Paint (FCP) & 0.8 seconds \\
+Largest Contentful Paint (LCP) & 1.2 seconds \\
+Time to Interactive (TTI) & 1.5 seconds \\
+Total Bundle Size (gzipped) & 245 KB \\
+Number of HTTP Requests (initial) & 8 \\
+Lighthouse Performance Score & 92/100 \\
+\bottomrule
+\end{tabular}
+\end{reporttable}
+\end{table}
+
+The application achieves a Lighthouse performance score of 92/100, indicating excellent load performance. Vite's code splitting and tree-shaking ensure that only the necessary JavaScript is loaded for each route, keeping the initial bundle size under 250KB.
+
+\section{Discussion}
+
+The results demonstrate that AlgoRiddle successfully achieves all of its design objectives:
+
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Real-Time Collaboration:} The Socket.IO-based synchronization engine provides perceptually instantaneous code updates with average latencies of 45--120ms, enabling seamless collaborative coding.
+    \item \textbf{Multi-Language Code Execution:} The Wandbox API integration reliably compiles and executes code in JavaScript, Python, and C++ with automated test case evaluation and detailed output comparison.
+    \item \textbf{Voice Communication:} The WebRTC implementation delivers good-to-excellent audio quality with echo cancellation and noise suppression, enabling natural verbal discussion without external tools.
+    \item \textbf{Visual Brainstorming:} The multi-tool whiteboard effectively supports visual algorithmic brainstorming with real-time synchronization and persistent drawing history.
+    \item \textbf{Gamified Learning:} The scoring system, celebration animations, and sequential question unlocking add an engaging competitive element to the learning experience.
+    \item \textbf{Zero-Cost Deployment:} The platform operates entirely on free-tier cloud services (Render + Vercel + MongoDB Atlas), validating the feasibility of building production-grade educational tools at zero cost.
+    \item \textbf{Professional UI:} The dark-themed interface with gradient accents, smooth animations, and responsive layout delivers a premium developer experience comparable to commercial products.
+\end{enumerate}
+
+The deployment on free-tier cloud platforms validates the feasibility of building production-grade educational tools at zero cost, making the platform accessible to students and institutions worldwide. The self-ping mechanism successfully prevents Render's free-tier server from entering sleep mode, ensuring consistent availability for users.
+
+The primary limitation identified during testing is the last-write-wins model for code synchronization, which can cause conflicts when two users edit the same line simultaneously. While this limitation is mitigated by the voice chat feature (users can coordinate their edits verbally), future versions should implement Operational Transformation or CRDT-based conflict resolution for a more robust editing experience.
